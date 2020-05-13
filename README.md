@@ -1,11 +1,11 @@
 # databases
-Database Design &amp; Management
+Academic Year 2019-2020 - First year of studies, second semester
 
 This course offers lecture and laboratory to provide a foundation in data management concepts and database systems. It includes representing information with the relational database model, manipulating data with an interactive query language (SQL) and database programming.
 
 
 # SQL Labs
-
+Environment used - Oracle SQL Developer
 #### Lab 1
 Introduction to SQL
 #### Lab 2
@@ -16,8 +16,8 @@ II. Join
 #### Lab 3
 
 <p>
-<img src="https://github.com/ralucatudor/databases/blob/master/labs/lab-03/images/SQL_JOINS.png" width=55%>
-<img src="https://github.com/ralucatudor/databases/blob/master/labs/lab-03/images/SQL_set_operators.png" width=44%>
+<img src="https://github.com/ralucatudor/databases/blob/master/lab-03/images/SQL_JOINS.png" width=55%>
+<img src="https://github.com/ralucatudor/databases/blob/master/lab-03/images/SQL_set_operators.png" width=44%>
 </p>
 
 #### Lab 4
@@ -35,7 +35,5 @@ Inclusion is not explicitly implemented in SQL, therefore we use the fact that "
 #### Lab 8
 
 
-## Utilitare UML
-- Microsoft Visio
-- Lucidchart
-- Visual Paradigm
+## UML Tools
+Microsoft Visio, Lucidchart, Visual Paradigm
