@@ -248,6 +248,66 @@ select * from dept_rtu;
 
 rollback;
 
+--20.05.2020--
+
+--24
+delete from emp_rtu where commission_pct is null;
+rollback;
+
+--25. Suprimati departamentele care un nu nici un angajat. Anulati modificarile.
+rollback;
+delete from dept_rtu
+where department_id not in (select nvl(department_id, -1) from emp_rtu);
+rollback;
+
+--26. Sa se creeze un fisier script prin care se cere un cod de angajat din tabelul EMP_PNU.
+--Se va lista inregistrarea corespunzatoare acestuia, iar apoi linia va fi suprimata din tabel.
+accept p_cod prompt 'Introduceti codul de angajat'
+select * from emp_rtu where employee_id = &p_cod;
+delete from emp_rtu
+where employee_id = &p_cod;
+
+
+--27. Sa se stearga un angajat din tabelul EMP_PNU prin intermediul script-ului creat la pb. 26 
+-- Modificarile vor deveni permanente.
+
+--28. Sa se mai introduca o linie in tabel, ruland inca o data fisierul creat la ex. 12.
+desc emp_rtu;
+insert into emp_rtu (employee_id, last_name, email, hire_date, job_id) values (300, 'Nume300', 'nume300@email.com', sysdate, 'IT_PROG');
+
+--29. Sa se marcheze un punct intermediar in procesarea tranzactiei.
+SAVEPOINT p;
+
+--30. Sa se stearga tot continutul tabelului. Listati continutul tabelului.
+delete from emp_rtu;
+select * from emp_rtu;
+
+--31. Sa se renunte la cea mai recenta operatie de stergere, fara a renunta la operatia
+--precedenta de introducere.
+ROLLBACK TO p;
+
+--32. Listati continutul tabelului. Determinati ca modificarile sa devina permanente.
+select * from emp_rtu;
+
+commit;
+
+---
+
+delete from emp_rtu
+where employee_id = 300;
+
+savepoint a;
+
+delete from emp_rtu
+where employee_id = 152;
+
+savepoint b;
+
+rollback to a;
+rollback to b;
+
+commit;
+
 
 
 
