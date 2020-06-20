@@ -16,31 +16,46 @@ SELECT *
 FROM DEPT_rtu;
 
 --4--
+-- Introducerea CONSTRANGERILOR DE INTEGRITATE:
 ALTER TABLE emp_rtu
 ADD CONSTRAINT pk_emp_rtu PRIMARY KEY(employee_id);
+
 ALTER TABLE dept_rtu
 ADD CONSTRAINT pk_dept_rtu PRIMARY KEY(department_id);
+
 ALTER TABLE emp_rtu
-ADD CONSTRAINT fk_emp_dept_rtu
-    FOREIGN KEY(department_id) REFERENCES dept_rtu(department_id);
+ADD CONSTRAINT fk_emp_dept_rtu FOREIGN KEY(department_id) REFERENCES dept_rtu(department_id);
+-- Ce constrangeri nu am implementat?
+
+ALTER TABLE emp_rtu
+ADD CONSTRAINT fk_emp_man_rtu FOREIGN KEY(manager_id) REFERENCES emp_rtu(emp_id);
+-- ca sa nu pot sa pun la manager_id un id care nu exista
+
+desc user_constraints;
 
 --5--
 --a)
 INSERT INTO DEPT_rtu
 VALUES (300, 'Programare');
+-- nu e ok - nu se furnizeaza valori pt. fiecare atribuit al obiectului destinatie
 
 --b)
 INSERT INTO DEPT_rtu (department_id, department_name)
 VALUES (300, 'Programare');
 ROLLBACK;
+-- este ok!
+
 --c)
 INSERT INTO DEPT_rtu (department_name, department_id)
 VALUES (300, 'Programare');
+-- nu e ok (nu se respecta ordinea)
 
 --d)
 INSERT INTO DEPT_rtu (department_id, department_name, location_id)
 VALUES (300, 'Programare', null);
 ROLLBACK;
+-- este ok!
+
 --e)
 INSERT INTO DEPT_rtu (department_name, location_id)
 VALUES ('Programare', null);
@@ -80,6 +95,7 @@ COMMIT;
 INSERT INTO emp_rtu (employee_id, last_name, email, hire_date,
  job_id, salary, commission_pct)
 VALUES (255, 'Nume255', 'nume255@emp.com', SYSDATE, 'SA_REP', 5000, NULL);
+
 SELECT employee_id, last_name, email, hire_date, job_id, salary, commission_pct
 FROM emp_rtu
 WHERE employee_id=255;
@@ -90,6 +106,7 @@ INSERT INTO
  (SELECT employee_id, last_name, email, hire_date, job_id, salary, commission_pct
  FROM emp_rtu)
 VALUES (255, 'Nume255', 'nume255@emp.com', SYSDATE, 'SA_REP', 5000, NULL);
+
 SELECT employee_id, last_name, email, hire_date, job_id, salary, commission_pct
 FROM emp_rtu
 WHERE employee_id=255;
@@ -102,7 +119,7 @@ INSERT INTO
 VALUES ((SELECT MAX(employee_id) + 1 FROM emp_rtu), 'Nume255', 'nume255@emp.com', SYSDATE, 'SA_REP', 5000, NULL);
 
 --9--
--- Demonstram ca NU se poate cu WITH
+-- Demonstram ca NU se poate cu WITH!!!
 WITH t AS (SELECT MAX(employee_id) + 1 cod FROM emp_rtu)
 INSERT INTO
  (SELECT employee_id, last_name, email, hire_date, job_id, salary, commission_pct
@@ -110,9 +127,11 @@ INSERT INTO
 VALUES ((SELECT cod FROM t), 'Nume255', 'nume255@emp.com', SYSDATE, 'SA_REP', 5000, NULL);
 
 --10--
+-- Creati un nou tabel, numit EMP1_PNU, care va avea aceeaai structura ca si EMPLOYEES, dar nicio inregistrare.
 CREATE TABLE emp1_rtu AS SELECT * FROM employees WHERE 1=0;
 --DELETE FROM emp1_rtu; --necesar daca nu aveam clauza WHERE de mai sus
 
+-- Copiati in tabelul EMP1_PNU salariatii (din tabelul EMPLOYEES) al caror comision depaseste 25% din salariu.
 INSERT INTO emp1_rtu
  SELECT *
  FROM employees
@@ -166,7 +185,7 @@ CREATE TABLE emp3_rtu AS SELECT * FROM employees WHERE 1=0;
 
 INSERT ALL
  WHEN salary < 5000 THEN INTO emp1_rtu
- WHEN salary between 5000 and 10000 THEN INTO emp2_rtu
+ WHEN salary BETWEEN 5000 AND 10000 THEN INTO emp2_rtu
  ELSE INTO emp3_rtu
 SELECT * FROM employees;
 
@@ -186,13 +205,17 @@ INSERT FIRST
  WHEN salary between 5000 and 10000 THEN INTO emp2_rtu
  ELSE INTO emp3_rtu
 SELECT * FROM employees;
+
+-- FIRST determina inserarea corespunzatoare primei clauze WHEN a carei conditie
+-- este evaluata TRUE. Toate celelalte clauze WHEN sunt ignorate.
+
 SELECT * FROM emp0_rtu;
 SELECT * FROM emp1_rtu;
 SELECT * FROM emp2_rtu;
 SELECT * FROM emp3_rtu;
 
 
---UPDATE--
+-----UPDATE-----
 --15--
 UPDATE emp_rtu
 SET salary = salary * 1.05;
@@ -203,110 +226,122 @@ ROLLBACK;
 --16--
 UPDATE emp_rtu
 SET job_id = 'SA_REP'
-WHERE department_id = 80;
+WHERE department_id = 80;   -- - daca nu apare clauza WHERE atunci sunt afectate toate liniile tabelului specificat
 ROLLBACK;
 
 --17--
-select * from dept_rtu where department_id=20;
-update dept_rtu
-set manager_id = (select employee_id from emp_rtu where lower(first_name || ' ' || last_name) = 'douglas grant')
-where department_id = 20;
+SELECT * FROM dept_rtu WHERE department_id=20;
 
-update emp_rtu
-set salary = salary +1000
-where lower(first_name || ' ' || last_name) = 'douglas grant';
+-- SA se promoveze Douglas Grant la functia de manager in departamentul 20...
+UPDATE dept_rtu
+SET manager_id = (SELECT employee_id FROM emp_rtu WHERE LOWER(first_name || ' ' || last_name) = 'douglas grant')
+WHERE department_id = 20;
+
+-- ...avand o crestere de salariu de 1000.
+UPDATE emp_rtu
+SET salary = salary +1000
+WHERE LOWER(first_name || ' ' || last_name) = 'douglas grant';
 
 --18--
-update emp_rtu e
-set (salary, commission_pct) = (select salary, commission_pct
-                                from emp_rtu 
-                                where employee_id = e.manager_id)
-where salary = (select min(salary) from emp_rtu);     
+-- Schimbati salariul si comisionul celui mai prost platit salariat din firma, astfel incat sa
+-- fie egale cu salariul si comisionul sefului sau.
+UPDATE emp_rtu e
+SET (salary, commission_pct) = (SELECT salary, commission_pct
+                                FROM emp_rtu 
+                                WHERE employee_id = e.manager_id)
+WHERE salary = (SELECT MIN(salary) FROM emp_rtu);     
 
 --19--
-update emp_rtu e
-set email = substr(last_name, 1, 1) || nvl(first_name, '.')
-where salary = (select max(salary) from emp_rtu where department_id = e.department_id);
+UPDATE emp_rtu e
+SET email = SUBSTR(last_name, 1, 1) || NVL(first_name, '.')  --  Daca nu are prenume atunci in loc de acesta apare caracterul '.'.
+WHERE salary = (SELECT MAX(salary) FROM emp_rtu WHERE department_id = e.department_id);
 
-rollback;
+ROLLBACK;
 
 --21--
 --subcereri pe tupluri
-update emp_rtu
-set (job_id, department_id) = (select job_id, department_id from emp_rtu where employee_id = 205)
-where employee_id=114;
+UPDATE emp_rtu
+SET (job_id, department_id) = (SELECT job_id, department_id FROM emp_rtu WHERE employee_id = 205)
+WHERE employee_id=114;
 
 
 --DELETE--
+-- DELETE FROM nume_tabel
+-- [WHERE conditie];
+-- Daca nu se specifica nicio conditie, atunci vor fi sterse toate liniile din tabel.
 --23--
-delete from dept_rtu; -- eroare
-delete from emp_rtu where department_id is not null;
-delete from dept_rtu;
+DELETE FROM dept_rtu; -- eroare
+DELETE FROM emp_rtu WHERE department_id IS NOT NULL;
+DELETE FROM dept_rtu;
 
-select * from emp_rtu;
-select * from dept_rtu;
+SELECT * FROM emp_rtu;
+SELECT * FROM dept_rtu;
 
-rollback;
+ROLLBACK;
 
 --20.05.2020--
 
 --24
-delete from emp_rtu where commission_pct is null;
-rollback;
+DELETE FROM emp_rtu WHERE commission_pct IS NULL;
+ROLLBACK;
 
 --25. Suprimati departamentele care un nu nici un angajat. Anulati modificarile.
-rollback;
-delete from dept_rtu
-where department_id not in (select nvl(department_id, -1) from emp_rtu);
-rollback;
+ROLLBACK;
+
+DELETE FROM dept_rtu
+WHERE department_id NOT IN (SELECT NVL(department_id, -1) FROM emp_rtu);
+
+ROLLBACK;
 
 --26. Sa se creeze un fisier script prin care se cere un cod de angajat din tabelul EMP_PNU.
 --Se va lista inregistrarea corespunzatoare acestuia, iar apoi linia va fi suprimata din tabel.
-accept p_cod prompt 'Introduceti codul de angajat'
-select * from emp_rtu where employee_id = &p_cod;
-delete from emp_rtu
-where employee_id = &p_cod;
+ACCEPT p_cod PROMPT 'Introduceti codul de angajat'
+SELECT * FROM emp_rtu WHERE employee_id = &p_cod;
+
+DELETE FROM emp_rtu
+WHERE employee_id = &p_cod;
 
 
 --27. Sa se stearga un angajat din tabelul EMP_PNU prin intermediul script-ului creat la pb. 26 
 -- Modificarile vor deveni permanente.
 
 --28. Sa se mai introduca o linie in tabel, ruland inca o data fisierul creat la ex. 12.
-desc emp_rtu;
-insert into emp_rtu (employee_id, last_name, email, hire_date, job_id) values (300, 'Nume300', 'nume300@email.com', sysdate, 'IT_PROG');
+DESC emp_rtu;
+
+INSERT INTO emp_rtu (employee_id, last_name, email, hire_date, job_id) VALUES (300, 'Nume300', 'nume300@email.com', sysdate, 'IT_PROG');
 
 --29. Sa se marcheze un punct intermediar in procesarea tranzactiei.
 SAVEPOINT p;
 
 --30. Sa se stearga tot continutul tabelului. Listati continutul tabelului.
-delete from emp_rtu;
-select * from emp_rtu;
+DELETE FROM emp_rtu;
+SELECT * FROM emp_rtu;
 
 --31. Sa se renunte la cea mai recenta operatie de stergere, fara a renunta la operatia
 --precedenta de introducere.
 ROLLBACK TO p;
 
 --32. Listati continutul tabelului. Determinati ca modificarile sa devina permanente.
-select * from emp_rtu;
+SELECT * FROM emp_rtu;
 
-commit;
+COMMIT;
 
 ---
 
-delete from emp_rtu
-where employee_id = 300;
+DELETE FROM emp_rtu
+WHERE employee_id = 300;
 
-savepoint a;
+SAVEPOINT a;
 
-delete from emp_rtu
-where employee_id = 152;
+DELETE FROM emp_rtu
+WHERE employee_id = 152;
 
-savepoint b;
+SAVEPOINT b;
 
-rollback to a;
-rollback to b;
+ROLLBACK to a;
+ROLLBACK to b;
 
-commit;
+COMMIT;
 
 
 
