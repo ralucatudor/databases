@@ -25,8 +25,8 @@ ADD CONSTRAINT pk_dept_rtu PRIMARY KEY(department_id);
 
 ALTER TABLE emp_rtu
 ADD CONSTRAINT fk_emp_dept_rtu FOREIGN KEY(department_id) REFERENCES dept_rtu(department_id);
--- Ce constrangeri nu am implementat?
 
+-- Ce constrangeri nu am implementat?
 ALTER TABLE emp_rtu
 ADD CONSTRAINT fk_emp_man_rtu FOREIGN KEY(manager_id) REFERENCES emp_rtu(emp_id);
 -- ca sa nu pot sa pun la manager_id un id care nu exista
@@ -342,9 +342,3 @@ ROLLBACK to a;
 ROLLBACK to b;
 
 COMMIT;
-
-
-
-
-
-
