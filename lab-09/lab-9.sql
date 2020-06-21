@@ -1,7 +1,7 @@
 --20.05.2020--
 --Laborator 9
 --1--
---a
+--a) fara precizarea vreunei chei sau constrangeri:
 create table ANGAJATI_rtu(
     cod_ang number(4), 
     nume varchar2(20), 
@@ -13,7 +13,7 @@ create table ANGAJATI_rtu(
     salariu number(8, 2),
     cod_dep number(2));
 
---b
+--b) cu precizarea cheilor primare la nivel de coloana si a constrangerilor NOT NULL pentru coloanele nume si salariu;
 drop table angajati_rtu;
 create table ANGAJATI_rtu(
     cod_ang number(4) primary key, 
@@ -47,7 +47,7 @@ create table ANGAJATI_rtu(
     salariu number(8, 2) constraint nn_sal_ang_rtu not null,
     cod_dep number(2));
 
---c
+--c) cu precizarea cheii primare la nivel de tabel si a constrangerilor NOT NULL pentru coloanele nume si salariu
 drop table angajati_rtu;
 create table ANGAJATI_rtu(
     cod_ang number(4), 
@@ -62,18 +62,21 @@ create table ANGAJATI_rtu(
     constraint pk_angajati_rtu primary key(cod_ang));
     
 --2--
-insert into angajati_rtu(cod_ang, nume, prenume, data_ang, job, salariu, cod_dep) values(100, 'Nume1', 'Prenume1', Null, 'Director', 20000, 10);
+insert into angajati_rtu(cod_ang, nume, prenume, data_ang, job, salariu, cod_dep) values(100, 'Nume1', 'Prenume1', null, 'Director', 20000, 10);
 insert into angajati_rtu values(101, 'Nume2', 'Prenume2', 'Nume2', to_date('02-02-2014', 'dd-mm-yyyy'), 'Inginer', 100, 10000, 10);
 insert into angajati_rtu values(102, 'Nume3', 'Prenume3', 'Nume3', to_date('05-06-2010', 'dd-mm-yyyy'), 'Programator', 101, 5000, 20);
 insert into angajati_rtu(cod_ang, nume, prenume, data_ang, job, cod_sef, salariu, cod_dep) values(103, 'Nume4', 'Prenume4', null, 'Inginer', 100, 9000, 20);
-insert into angajati_rtu values(104, 'Nume5', 'Prenume5', 'Nume5', Null, 'Programator', 101, 3000, 30);
+insert into angajati_rtu values(104, 'Nume5', 'Prenume5', 'Nume5', null, 'Programator', 101, 3000, 30);
 
 --3
 create table angajati10_rtu as select * from angajati_rtu where cod_dep=10;
+
 desc angajati10_rtu;
+
 select * from angajati10_rtu;
 
 --4
+-- Introduceti coloana comision in tabelul ANGAJATI_pnu. 
 alter table angajati_rtu
 add (comision number(4,2));
 
@@ -84,44 +87,53 @@ modify (salariu number(6,2));
 desc angajati_rtu;
 
 --6
+-- Setati o valoare DEFAULT pentru coloana salariu
 alter table angajati_rtu
 modify (salariu default 1000);
 
 --7
+-- Modificati tipul coloanei comision in NUMBER(2, 2) si al coloanei salariu in
+-- NUMBER(10,2), in cadrul aceleiasi instructiuni.
 alter table angajati_rtu
 modify (salariu number(10,2), comision number(2,2));
 
 --8
---Actualizati valoarea coloanei comision, setand-o la valoarea 0.1 pentru salariatii ai
---caror job incepe cu litera I. (UPDATE)
+-- Actualizati valoarea coloanei comision, setand-o la valoarea 0.1 pentru salariatii ai
+-- caror job incepe cu litera I. (UPDATE)
 
 UPDATE angajati_rtu
 SET comision = 0.1
 WHERE UPPER(job) like 'I%';
 
--- LDD URILE AU EFECT IMEDIAT, NU FAC PARTE DIN TRANZACITE, CI DIMPOTRIVA, ELE INCHEIE TRANZACTIA
--- OBS - AVEM 1 TRANZACTIE CARE POATE AVEA MAI MULTE COMENZI, NU MAI MULTE TRANZACTII
+-- LDD URILE AU EFECT IMEDIAT, NU FAC PARTE DIN TRANZACITE, CI DIMPOTRIVA, ELE INCHEIE TRANZACTIA.
+-- OBS - AVEM 1 TRANZACTIE CARE POATE AVEA MAI MULTE COMENZI, NU MAI MULTE TRANZACTII.
 
 --9
 desc angajati_rtu;
-
+-- Modificati tipul de date al coloanei email în VARCHAR2.
 alter table angajati_rtu
 modify (email varchar2(20));
 
 --10
+-- Adaugati coloana nr_telefon in tabelul ANGAJATI_pnu, setandu-i o valoare implicita.
 alter table angajati_rtu
 add(nr_telefon varchar2(15) default '021123456');
 
 --11
+-- Vizualizati inregistrarile existente.
 select * from angajati_rtu;
+-- Suprimati coloana nr_telefon.
 alter table angajati_rtu
 drop (nr_telefon);
 
 --12
+-- Redenumiti tabelul ANGAJATI_pnu in ANGAJATI3_pnu
 rename angajati_rtu to angajati3_rtu;
 
 --13
+-- Consultati vizualizarea TAB din dictionarul datelor. 
 select * from tab;
+-- Redenumiti angajati3_pnu in angajati_pnu.
 rename angajati3_rtu to angajati_rtu;
 
 --14

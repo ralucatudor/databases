@@ -189,13 +189,13 @@ RIGHT OUTER JOIN departments d ON (e.department_id = d.department_id);
 SELECT e.employee_id, e.last_name, d.department_name
 FROM employees e, departments d
 WHERE e.department_id = d.department_id (+)
-UNION -- UNION elimin? duplicatele!
+UNION -- UNION elimina duplicatele!
 SELECT e.employee_id, e.last_name, d.department_name
 FROM employees e, departments d
 WHERE e.department_id (+) = d.department_id;
 -- Metoda este echivalenta cu FULL OUTER JOIN
 -- deoarece am introdus coloana employee_id care sa asigure unicitatea
--- ai sa nu se elimine duplicatele (last_name, department_name)
+-- asa incat sa nu se elimine duplicatele (last_name, department_name)
 
 SELECT e.last_name, d.department_name
 FROM employees e

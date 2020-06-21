@@ -72,7 +72,7 @@ create or replace view VIZ_EMP_DEP30_rtu as
   from emp_rtu e join dept_rtu d on (e.department_id = d.department_id)
   where e.department_id = 30; 
  
- SELECT uc.table_name, constraint_name, column_name, constraint_type, search_condition
+SELECT uc.table_name, constraint_name, column_name, constraint_type, search_condition
 FROM user_cons_columns ucc join user_constraints uc using (constraint_name)
 WHERE LOWER(uc.table_name) IN ('emp_rtu'); 
 
@@ -84,12 +84,12 @@ insert into VIZ_EMP_DEP30_rtu(employee_id, last_name, email, salary, hire_date, 
 values(303, 'Nume303', 'Nume303', 34567, sysdate, 'IT_PROG', 30);  
 
 
- --d
- select * from VIZ_EMP_DEP30_rtu;
+--d
+select * from VIZ_EMP_DEP30_rtu;
  
- select * from USER_UPDATABLE_COLUMNS where TABLE_NAME = 'VIZ_EMP_DEP30_RTU';
+select * from USER_UPDATABLE_COLUMNS where TABLE_NAME = 'VIZ_EMP_DEP30_RTU';
  
- d) Ce efect are o opera?ie de ?tergere prin intermediul vizualiz?rii
+--d) Ce efect are o operatie de stergere prin intermediul vizualizarii
 delete from VIZ_EMP_DEP30_rtu where employee_id=303;
 
 --6
@@ -104,3 +104,15 @@ select * from USER_UPDATABLE_COLUMNS where TABLE_NAME = 'VIZ_DEPT_SUM_RTU';
 SELECT view_name, text
 FROM user_views
 WHERE view_name LIKE '%RTU';
+
+--13
+CREATE OR REPLACE VIEW viz_emp_wx_rtu
+AS SELECT *
+ FROM emp_rtu
+ WHERE UPPER(last_name) NOT LIKE 'WX%'
+WITH CHECK OPTION CONSTRAINT ck_name_emp_rtu2;
+
+UPDATE viz_emp_wx_rtu
+SET last_name = 'Wxyz'
+WHERE employee_id = 200;
+

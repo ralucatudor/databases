@@ -136,7 +136,7 @@ FROM employees e RIGHT OUTER JOIN departments d USING (department_id)
 GROUP BY country_id, c.country_name;
 
 --5--
---angajatii care au lucrat la cel putin doua proiecte nelivrate
+--angajatii care au lucrat la cel putin doua proiecte nelivrate la termen
 WITH nelivrate AS (SELECT project_id
                    FROM project
                    WHERE NVL(delivery_date, sysdate) > deadline)
@@ -172,9 +172,9 @@ FROM employees e LEFT JOIN works_on w ON (e.employee_id = w.employee_id);
 
 --7--
 WITH manageri AS (SELECT project_manager FROM project),
-dep_manageri AS (SELECT department_id 
-                 FROM employees 
-                 WHERE employee_id IN (SELECT * FROM manageri))
+    dep_manageri AS (SELECT department_id 
+                     FROM employees 
+                     WHERE employee_id IN (SELECT * FROM manageri))
 SELECT * 
 FROM employees
 WHERE department_id IN (SELECT * FROM dep_manageri);
@@ -191,22 +191,26 @@ where department_id not in (select* from dep_manageri) or department_id is NULL;
 
 --- ex 7 & 8 cu cereri sincronizate
 --7
-with manageri as(select project_manager from project),
-dep_manageri as(select department_id from employees where employee_id in (select * from manageri))
-select * 
-from employees e
-where EXISTS ( SELECT *
-               FROM dep_manageri
-               WHERE e.department_id = department_id);
+WITH manageri AS (SELECT project_manager FROM project),
+    dep_manageri AS (SELECT department_id   
+                     FROM employees 
+                     WHERE employee_id IN (SELECT * FROM manageri))
+SELECT * 
+FROM employees e
+WHERE EXISTS (SELECT *
+              FROM dep_manageri
+              WHERE e.department_id = department_id);
 
 --8 
-with manageri as(select project_manager from project),
-dep_manageri as(select nvl(department_id,-1) department_id from employees where employee_id in (select * from manageri))
-select * 
-from employees e
-where NOT EXISTS (SELECT *
-              FROM dep_manageri
-              WHERE e.department_id = department_id) OR e.department_id IS NULL;
+WITH manageri AS (SELECT project_manager FROM project),
+    dep_manageri AS (SELECT nvl(department_id,-1) department_id 
+                     FROM employees 
+                     WHERE employee_id IN (SELECT * FROM manageri))
+SELECT * 
+FROM employees e
+WHERE NOT EXISTS (SELECT *
+                  FROM dep_manageri
+                  WHERE e.department_id = department_id) OR e.department_id IS NULL;
 
 
 --9
@@ -245,6 +249,8 @@ where (select count(*) from project where e.employee_id = project_manager) = 2
 group by e.first_name, e.last_name, e.salary;
 
 --11
+-- Sa se afiseze lista angajatilor care au lucrat NUMAI pe proiecte conduse de managerul
+-- de proiect avand codul 102.
 SELECT DISTINCT a.employee_id, e.last_name, e.first_name
 FROM works_on a JOIN employees e ON (a.employee_id = e.employee_id)
 WHERE NOT EXISTS ( 
@@ -259,6 +265,9 @@ WHERE NOT EXISTS (
      WHERE p.project_manager = 102));
 
 --12 a
+-- Sa se obtina numele angajatilor care au lucrat CEL PUTIN pe aceleasi proiecte ca
+-- angajatul avand codul 200.
+
 with projects_200 as (select project_id
                       from works_on
                       where employee_id = 200)
@@ -275,6 +284,8 @@ where not exists
         where w.employee_id = e.employee_id);
 
 --12 b
+-- Sa se obtina numele angajatilor care au lucrat CEL MULT pe aceleasi proiecte ca angajatul
+-- avand codul 200.
 with projects_200 as (select project_id
                       from works_on
                       where employee_id = 200)
@@ -291,6 +302,7 @@ where not exists
         from projects_200);
 
 --13
+-- Sa se obtina angajatii care au lucrat pe aceleasi proiecte ca angajatul avand codul 200.
 with projects_200 as (select project_id
                       from works_on
                       where employee_id = 200)
@@ -331,6 +343,8 @@ where salary between lowest_sal and highest_sal;
 select first_name, last_name, salary, grade_level
 from employees e join job_grades on (salary between lowest_sal and highest_sal);
 
+
+--IV. [SQL*Plus]
 --18
 --v1
 DEFINE id_job = IT_PROG;
