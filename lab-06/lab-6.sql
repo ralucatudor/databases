@@ -58,7 +58,8 @@ WHERE salary = (SELECT MIN(salary)
 SELECT e.first_name, e.salary 
 FROM employees e
 WHERE salary IN (SELECT MIN(salary) 
-                 FROM employees GROUP BY department_id);
+                 FROM employees 
+                 GROUP BY department_id);
 -- !!!! mi-i da pe cei care castiga salariu poate din alt departament - deci NU E BINE
 
 -- corect
@@ -68,6 +69,14 @@ WHERE (department_id, salary) IN (SELECT department_id, -- fac asa cu tupluri!!!
                                          MIN(salary) 
                                   FROM employees 
                                   GROUP BY department_id);
+
+-- tot corect
+SELECT e.first_name, e.salary 
+FROM employees e
+WHERE salary IN (SELECT MIN(salary) 
+                 FROM employees 
+                 WHERE department_id = e.department_id);
+                 --GROUP BY department_id);
 
 --4--
 SELECT d.department_name, e.last_name
@@ -217,7 +226,7 @@ WHERE ROWNUM <= 3;
 SELECT
     job_id,
     CASE
-        WHEN lower(job_id) LIKE 's%' THEN
+        WHEN LOWER(job_id) LIKE 's%' THEN
             (SELECT SUM(salary)
              FROM employees
              WHERE job_id = e.job_id)
